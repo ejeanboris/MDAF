@@ -11,11 +11,11 @@ r.seed(int(time.time()))
 
 heuristicpath = "/home/remi/Documents/MDAF-GitLAB/SourceCode/SampleAlgorithms/SimmulatedAnnealing.py"
 heuristic_name = "SimmulatedAnnealing"
-testfunctionpaths = ["/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin2.py"]
-funcnames = ["Bukin2"]
+testfunctionpaths = ["/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin2.py", "/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin4.py", "/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin6.py"]
+funcnames = ["Bukin2", "Bukin4", "Bukin6"]
 objs = 0
-args = {"high": 200, "low": -200, "t": 100, "p": 0.8}
-scale = 3
+args = {"high": 200, "low": -200, "t": 100, "p": 0.95}
+scale = 2.5
 
 
 def doe(heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale):
