@@ -28,9 +28,10 @@ def Quality(Sc,objective,func):
         error = [func_output[i]-objective[i] for i in range(len(func_output))]
     else:
         error = func_output - objective
+        print("Error is: "+str(error))
     return 1/abs(error)
 
-def main(func,obj,S,args):
+def main(func, obj, S, args, connection):
     r.seed(int(time.time()))
     route = list()
     #Parsing arguments
@@ -71,10 +72,12 @@ def main(func,obj,S,args):
             route.append(Best[:])
             print(route)
             
-        if t < 0 or Quality(Best,y,func) > 200:
+        if t < 0 or Quality(Best,y,func) > 1000:
             break
     #print('the Best Quality obtained was:{}'.format(Quality(Best,y)))
-    return Best
+    print("Final Quality is: {}".format(Quality(Best,y,func)))
+    print("final Temperature is: {}".format(t))
+    connection.send(Best)
 
 
 
