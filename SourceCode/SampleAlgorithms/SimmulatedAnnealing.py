@@ -31,7 +31,7 @@ def Quality(Sc,objective,func):
         print("Error is: "+str(error))
     return 1/abs(error)
 
-def main(func, obj, S, args, connection):
+def main(func, obj, S, args):
     r.seed(int(time.time()))
     route = list()
     #Parsing arguments
@@ -77,7 +77,7 @@ def main(func, obj, S, args, connection):
     #print('the Best Quality obtained was:{}'.format(Quality(Best,y)))
     print("Final Quality is: {}".format(Quality(Best,y,func)))
     print("final Temperature is: {}".format(t))
-    connection.send(Best)
+    return Best
 
 
 

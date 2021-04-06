@@ -1,67 +1,94 @@
 # directly running the DOE because existing surrogates can be explored with another workflow
 
-from numpy import random as r
-import time
 import importlib.util
 import multiprocessing
+import time
+
+from numpy import random as r
 
 
-
-# initialise the logic helpers
-r.seed(int(time.time()))
 
 heuristicpath = "/home/remi/Documents/MDAF-GitLAB/SourceCode/SampleAlgorithms/SimmulatedAnnealing.py"
 heuristic_name = "SimmulatedAnnealing"
 testfunctionpaths = ["/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin2.py", "/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin4.py", "/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Brown.py"]
 funcnames = ["Bukin2", "Bukin4", "Brown"]
-# testfunctionpaths = ["/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Brown.py"]
-# funcnames = ["Brown"]
+# testfunctionpaths = ["/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin4.py"]
+# funcnames = ["Bukin4"]
 
 objs = 0
 args = {"high": 200, "low": -200, "t": 1000, "p": 0.95}
 scale = 2.5
 
+def measure(heuristicpath, heuristic_name, funcpath, funcname, objs, args, scale, connection):
+    # Seeding the random module for generating the initial point of the optimizer: Utilising random starting point for experimental validity
+    r.seed(int(time.time()))
 
-def doe(heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale):
+    # loading the heuristic object into the namespace and memory
     spec = importlib.util.spec_from_file_location(heuristic_name, heuristicpath)
     heuristic = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(heuristic)
-    proc = list()
-    connections = []
-    #heuristic.MyClass()
+
+    testspec = importlib.util.spec_from_file_location(funcname, funcpath)
+    func = importlib.util.module_from_spec(testspec)
+    testspec.loader.exec_module(func)
+
+    # Defining a random initial point to start testing the algorithms
+    initpoint = [r.random() * scale, r.random() * scale]
+
+    #This timer calculates directly the CPU time of the process (Nanoseconds)
+    tic = time.process_time_ns()
+    # running the test by calling the heuritic script with the test function as argument
+    best = heuristic.main(func, objs, initpoint, args)
+    toc = time.process_time_ns()
+    # ^^ The timer ends right above this; the CPU time is then calculated below by simple difference ^^
+
+    # Building the response
+    response = "The optimum point obtained is: " + str(best) + "\nThe CPU time of the process was: " + str((toc - tic)*(10**-9))
+
+    connection.send(response)
+
+
+
+def doe(heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale):
+
+
+    # logic variables to deal with the processes
+    proc = []
+    connections = {}
+
+    # loading the test functions into the namespace and memory
     for idx, funcpath in enumerate(testfunctionpaths):
-        testspec = importlib.util.spec_from_file_location(funcnames[idx], funcpath)
-        func = importlib.util.module_from_spec(testspec)
-        testspec.loader.exec_module(func)
-        #func.MyClass()
-        initpoint = [r.random() * scale, r.random() * scale]
-        connections.append(multiprocessing.Pipe(duplex=False))
-        proc.append(multiprocessing.Process(target=heuristic.main, name=funcnames[idx], args=(func, objs, initpoint, args, connections[idx][1])))
+        funcname = funcnames[idx]
+        # Creating the connection objects for communication between the heuristic and this module
+        connections[funcname] = multiprocessing.Pipe(duplex=False)
+        proc.append(multiprocessing.Process(target=measure, name=funcname, args=(heuristicpath, heuristic_name, funcpath, funcname, objs, args, scale, connections[funcname][1])))
 
+    # defining the response variables
+    responses = {}
+    failedfunctions = {}
+    processtiming = {}
 
-    responses = []
-    failedfunctions = []
-    processtiming = []
+    # defining some logic variables
 
     for idx,process in enumerate(proc):
-        # processtiming.append(time.tic())
         process.start()
-        # connections[idx][1].close()
 
-    # Waiting for all the runs to be done
+    # Waiting for all the runs to be
+    # multiprocessing.connection.wait([process.sentinel for process in proc])
     for process in proc: process.join()
 
-    for idx,conn in enumerate(connections):
-        if proc[idx].exitcode == 0: responses.append(conn[0].recv())
+    for process in proc:
+        run = process.name
+        if process.exitcode == 0: responses[run] = connections[run][0].recv()
         else:
-            responses.append("this run was mot successful")
-            failedfunctions.append((funcnames[idx], proc[idx].exitcode))
-        conn[0].close()
-        conn[1].close()
+            responses[run] = "this run was not successful"
+            failedfunctions[run] = process.exitcode
+        connections[run][0].close()
+        connections[run][1].close()
 
     # display output
     print("\n\n||||| Responses |||||")
-    for idx,response in enumerate(responses): print(funcnames[idx] + "____\n" + "started :" + str(initpoint) + "\nEnded  :" + str(responses[idx]) + "\n_________________")
+    for process in proc: print(process.name + "____\n" + str(responses[process.name]) + "\n_________________")
 
 
 doe (heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale)
