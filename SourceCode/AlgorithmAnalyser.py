@@ -58,7 +58,7 @@ def measure(heuristicpath, heuristic_name, funcpath, funcname, objs, args, scale
     # ^^ The timer ends right above this; the CPU time is then calculated below by simple difference ^^
 
     # Building the response
-    response = "The optimum point obtained is: " + str(best) + "\nThe CPU time of the process was: " + str((toc - tic)*(10**-9) + "Seconds")
+    response = "The optimum point obtained is: " + str(best) + "\nThe CPU time of the process was: " + str((toc - tic)*(10**-9)) + "Seconds"
 
     connection.send(response)
 
