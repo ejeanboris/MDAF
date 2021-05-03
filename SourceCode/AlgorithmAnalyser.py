@@ -19,16 +19,6 @@ import statistics as st
 from scipy import signal, misc, ndimage
 
 
-heuristicpath = "/home/remi/Documents/MDAF-GitLAB/SourceCode/SampleAlgorithms/SimmulatedAnnealing.py"
-heuristic_name = "SimmulatedAnnealing"
-testfunctionpaths = ["/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin2.py", "/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin4.py", "/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Brown.py"]
-funcnames = ["Bukin2", "Bukin4", "Brown"]
-# testfunctionpaths = ["/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin4.py"]
-# funcnames = ["Bukin4"]
-
-objs = 0
-args = {"high": 200, "low": -200, "t": 1000, "p": 0.95}
-scale = 2.5
 
 def measure(heuristicpath, heuristic_name, funcpath, funcname, objs, args, scale, connection):
     '''
@@ -240,7 +230,19 @@ def doe(heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args,
     print("\n\n||||| Responses |||||")
     for process in proc: print(process.name + "____\n" + str(responses[process.name]) + "\n_________________")
 
+if __name__ == '__main__':
+    heuristicpath = "/home/remi/Documents/MDAF-GitLAB/SourceCode/SampleAlgorithms/SimmulatedAnnealing.py"
+    heuristic_name = "SimmulatedAnnealing"
+    testfunctionpaths = ["/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin2.py", "/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin4.py", "/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Brown.py"]
+    funcnames = ["Bukin2", "Bukin4", "Brown"]
+    # testfunctionpaths = ["/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin4.py"]
+    # funcnames = ["Bukin4"]
+    
+    objs = 0
+    args = {"high": 200, "low": -200, "t": 1000, "p": 0.95}
+    scale = 2.5
+        
+    doe (heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale)
+    
+    #representfunc("/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin6.py")
 
-doe (heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale)
-
-#representfunc("/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin6.py")
