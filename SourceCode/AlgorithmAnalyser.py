@@ -48,7 +48,7 @@ def measure(heuristicpath, heuristic_name, funcpath, funcname, objs, args, scale
     # ^^ The timer ends right above this; the CPU time is then calculated below by simple difference ^^
 
     # Building the response
-    response = "The optimum point obtained is: " + str(best) + "\nThe CPU time of the process was: " + str((toc - tic)*(10**-9)) + "Seconds"
+    response = "The optimum point obtained is: " + str(best) + "\nThe CPU time of the process was: " + str((toc - tic)*(10**-9)) + " Seconds"
 
     connection.send(response)
 
@@ -231,16 +231,16 @@ def doe(heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args,
     for process in proc: print(process.name + "____\n" + str(responses[process.name]) + "\n_________________")
 
 if __name__ == '__main__':
-    heuristicpath = "/home/remi/Documents/MDAF-GitLAB/SourceCode/SampleAlgorithms/SimmulatedAnnealing.py"
+    heuristicpath = "SampleAlgorithms/SimmulatedAnnealing.py"
     heuristic_name = "SimmulatedAnnealing"
-    testfunctionpaths = ["/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin2.py", "/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin4.py", "/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Brown.py"]
+    testfunctionpaths = ["TestFunctions/Bukin2.py", "TestFunctions/Bukin4.py", "TestFunctions/Brown.py"]
     funcnames = ["Bukin2", "Bukin4", "Brown"]
     # testfunctionpaths = ["/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin4.py"]
     # funcnames = ["Bukin4"]
     
     objs = 0
     args = {"high": 200, "low": -200, "t": 1000, "p": 0.95}
-    scale = 2.5
+    scale = 1
         
     doe (heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale)
     
