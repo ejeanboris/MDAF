@@ -2,6 +2,9 @@
 
 
 def main(args):
+    '''
+    #_# dimmensions: 2
+    '''
     for x in args:
         if x < -1.2 or x > 1.2:
             return 0

@@ -2,12 +2,12 @@ import math
 
 
 def main(args):
-    """
+    '''
     >>>main([0, 1, 1, 1])
     0
-    :param args:
-    :return:
-    """
+    
+     #_# dimmensions: 4
+    '''
     for x in args:
         if x < -1 or x > 1:
             return 0

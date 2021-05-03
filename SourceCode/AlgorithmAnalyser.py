@@ -5,8 +5,18 @@ import multiprocessing
 import time
 import re
 from numpy import random as r
+from numpy import *
+
 import shutil
 
+# Surrogate modelling
+import itertools
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+# Test function characteristics
+import statistics as st
+from scipy import signal, misc, ndimage
 
 
 heuristicpath = "/home/remi/Documents/MDAF-GitLAB/SourceCode/SampleAlgorithms/SimmulatedAnnealing.py"
@@ -21,6 +31,10 @@ args = {"high": 200, "low": -200, "t": 1000, "p": 0.95}
 scale = 2.5
 
 def measure(heuristicpath, heuristic_name, funcpath, funcname, objs, args, scale, connection):
+    '''
+    This function runs each optimization process of the heuristic with one test function
+    '''
+    
     # Seeding the random module for generating the initial point of the optimizer: Utilising random starting point for experimental validity
     r.seed(int(time.time()))
 
@@ -44,7 +58,7 @@ def measure(heuristicpath, heuristic_name, funcpath, funcname, objs, args, scale
     # ^^ The timer ends right above this; the CPU time is then calculated below by simple difference ^^
 
     # Building the response
-    response = "The optimum point obtained is: " + str(best) + "\nThe CPU time of the process was: " + str((toc - tic)*(10**-9))
+    response = "The optimum point obtained is: " + str(best) + "\nThe CPU time of the process was: " + str((toc - tic)*(10**-9) + "Seconds")
 
     connection.send(response)
 
@@ -89,21 +103,95 @@ def representfunc(funcpath):
             results[charac[0]] = float(charac[1])
 
         # Automatically generate the representation if the docstrings did not return anything
-        if not results:
-            print("Calculating the Characteristics")
+        if not ('Represented' in results):
+            print("Warning, the Representation of the Test Function has not specified\n===\n******Calculating the Characteristics******")
+            n = int(results['dimmensions'])
+            
+            # pickle these steps
+            coords = arange(-10,10,0.5)
+            samplemx = array([*itertools.product(coords, repeat=n)])
+            funcmap = array([* map(funcmodule.main, samplemx)])
+            
+            # Arrays for plotting the test function
+            X = array([tp[0] for tp in samplemx])
+            Y = array([tp[1] for tp in samplemx])
+            Z = array(funcmap)
+            
+            # reshaping the array into a 3D topology
+            topology = reshape(Z,(coords.size,coords.size))
+            ck = topology
+            
+            # Plotting the test function
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax.plot_trisurf(X, Y, Z)
+            # plt.show()
+            
+            
 
-            # Modality
-
-            # Basins
-
-            # Valleys
-
-            # Separability
-
-            # Dimensionality
-
-
+            # Number of Modes filter the data for local optima: look for circle like shapes, or squares or rectangles of very low derivative (tip of modes)
+            
+            
+            
+            # Valleys and Bassins
+            
+            # Alternative filter used for calculating derivatives
+            derfilt = array([1.0, -2, 1.0], dtype=float32)
+            alpha = signal.sepfir2d(ck, derfilt, [1]) + signal.sepfir2d(ck, [1], derfilt)
+            
+            # Currently used filter for Valley detection
+            hor = array([[0,1,1],[-1,0,1], [-1,-1,0]])
+            vert = array([[-1,-1,0], [-1,0,1], [0,1,1]])
+            
+            for i in range(1): betaH = signal.convolve(ck,hor,mode='valid')
+            for i in range(1): betaV = signal.convolve(ck,vert, mode='valid')
+            
+            beta = sqrt(betaH ** 2 + betaV ** 2)
+            
+                        
+            #beta = beta[5:-5][5:-5]
+            
+            norm = linalg.norm(beta)
+            beta/= norm  # normalized matrix
+            
+            
+            # custom filter for detection should light up the locaton of pattern
+            kernel = array([[1,1,1], [1,100,1], [1,1,1]])
+            beta = beta < average(beta)
+            beta = beta * 1
+            for i in range(100):
+                    beta = ndimage.convolve(beta,kernel)
+                    beta = beta >= 101
+                    beta = beta * 1
+            
+            if any(beta): results['Valleys'] = True
+            
+            
+            # Separability: calculate the derivatives in one dimension and see if independant from other dimension
+            
+            
+            # Dimensionality: number of objectives, inputs: call function once and see what it gives | for number of inputs call until it works; try catch
+            
+            
+            # Pareto fronts: 
+            
+            
+            # Noisyness: use the previously generated DOE and calculate a noisyness factor; average of derivative
+            
+            # Displaying the plots for development purposes
+            img1 = plt.figure()
+            ax2 = img1.add_subplot(111)
+            ax2.imshow(alpha)
+            
+            img2 = plt.figure()
+            ax3 = img2.add_subplot(111)
+            ax3.imshow(beta)
+            
+            plt.show()
+            
+            
             # Writing the calculated representation into the test function file
+            # results['Represented'] = True
             writerepresentation(funcpath, results)
 
 
@@ -153,6 +241,6 @@ def doe(heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args,
     for process in proc: print(process.name + "____\n" + str(responses[process.name]) + "\n_________________")
 
 
-#doe (heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale)
+doe (heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale)
 
-representfunc("/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin2.py")
+#representfunc("/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin6.py")

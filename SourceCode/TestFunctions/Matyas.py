@@ -1,13 +1,12 @@
 
 def main(args):
-    """
+    '''
     >>> main([0,1])
     0.26
 
-    :param args: list of floats
-    :return: float
-
-    """
+    
+     #_# dimmensions: 2
+    '''
     for x in args:
         if x < -10 or x > 10:
             return 0
