@@ -20,6 +20,8 @@ from scipy import signal, misc, ndimage
 
 
 
+
+
 def measure(heuristicpath, heuristic_name, funcpath, funcname, objs, args, scale, connection):
     '''
     This function runs each optimization process of the heuristic with one test function
@@ -126,8 +128,8 @@ def representfunc(funcpath):
             # Valleys and Bassins
             
             # Alternative filter used for calculating derivatives
-            derfilt = array([1.0, -2, 1.0], dtype=float32)
-            alpha = signal.sepfir2d(ck, derfilt, [1]) + signal.sepfir2d(ck, [1], derfilt)
+            #derfilt = array([1.0, -2, 1.0], dtype=float32)
+            #alpha = signal.sepfir2d(ck, derfilt, [1]) + signal.sepfir2d(ck, [1], derfilt)
             
             # Currently used filter for Valley detection
             hor = array([[0,1,1],[-1,0,1], [-1,-1,0]])
@@ -169,16 +171,16 @@ def representfunc(funcpath):
             # Noisyness: use the previously generated DOE and calculate a noisyness factor; average of derivative
             
             # Displaying the plots for development purposes
-            img1 = plt.figure()
-            ax2 = img1.add_subplot(111)
-            ax2.imshow(alpha)
+            #img1 = plt.figure()
+            #ax2 = img1.add_subplot(111)
+            #ax2.imshow(alpha)
             
             img2 = plt.figure()
             ax3 = img2.add_subplot(111)
             ax3.imshow(beta)
             
             plt.show()
-            
+            print("should be plotted")
             
             # Writing the calculated representation into the test function file
             # results['Represented'] = True
@@ -242,7 +244,9 @@ if __name__ == '__main__':
     args = {"high": 200, "low": -200, "t": 1000, "p": 0.95}
     scale = 1
         
-    doe (heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale)
+    #doe (heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale)
     
-    #representfunc("/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin6.py")
+    representfunc("TestFunctions/Bukin6.py")
 
+
+# %%
