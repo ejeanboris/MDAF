@@ -8,7 +8,10 @@
 *.log
 *.log.*
 *.sig
+*.py.old
+*.cpython-38.pyc
 
 pkg/
 src/
 snippets/
+

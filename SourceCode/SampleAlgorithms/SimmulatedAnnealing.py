@@ -23,7 +23,7 @@ def tweak(St,p,sigma,high,low):
     return St
 
 def Quality(Sc,objective,func):
-    func_output = func.main(Sc)
+    func_output = func(Sc)
     if type(func_output) == list:
         error = [func_output[i]-objective[i] for i in range(len(func_output))]
     else:

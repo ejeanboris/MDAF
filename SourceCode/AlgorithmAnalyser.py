@@ -6,6 +6,7 @@ import time
 import re
 from numpy import random as r
 from numpy import *
+import statistics
 
 import shutil
 
@@ -19,6 +20,16 @@ import statistics as st
 from scipy import signal, misc, ndimage
 
 
+class counter:
+    #wraps a function, to keep a running count of how many
+    #times it's been called
+    def __init__(self, func):
+        self.func = func
+        self.count = 0
+
+    def __call__(self, *args, **kwargs):
+        self.count += 1
+        return self.func(*args, **kwargs)
 
 
 
@@ -39,20 +50,49 @@ def measure(heuristicpath, heuristic_name, funcpath, funcname, objs, args, scale
     func = importlib.util.module_from_spec(testspec)
     testspec.loader.exec_module(func)
 
-    # Defining a random initial point to start testing the algorithms
-    initpoint = [r.random() * scale, r.random() * scale]
+    responses = array([0,0])
+    convergence = empty(0)
+    best = empty(0)
 
-    #This timer calculates directly the CPU time of the process (Nanoseconds)
-    tic = time.process_time_ns()
-    # running the test by calling the heuritic script with the test function as argument
-    best = heuristic.main(func, objs, initpoint, args)
-    toc = time.process_time_ns()
-    # ^^ The timer ends right above this; the CPU time is then calculated below by simple difference ^^
+    with pool(processes = 10) as pool:
+        
+        for run in range(30):
+            # defining a countable test function
+            @counter
+            def testfunc(args):
+                return func.main(args)
+            # Defining a random initial point to start testing the algorithms
+            initpoint = [r.random() * scale, r.random() * scale]
 
-    # Building the response
-    response = "The optimum point obtained is: " + str(best) + "\nThe CPU time of the process was: " + str((toc - tic)*(10**-9)) + " Seconds"
+            try:
+                #This timer calculates directly the CPU time of the process (Nanoseconds)
+                tic = time.process_time_ns()
+                # running the test by calling the heuritic script with the test function as argument
+                best = append(best, heuristic.main(testfunc, objs, initpoint, args))
+                toc = time.process_time_ns()
+                # ^^ The timer ends right above this; the CPU time is then calculated below by simple difference ^^
+                # CPU time in seconds
+                cpuTime = (toc - tic)*(10**-9)
+                numCalls = testfunc.count
+                converged = 1
+                
+            except:
+                best = NaN
+                cpuTime = NaN
+                numCalls = testfunc.count
+                converged = 0
+            
+            # Building the response
+            responses = vstack([responses, array([cpuTime,numCalls])])
+            convergence = append(convergence,[converged])
+        
+    responses = delete(responses,[0],axis=0)
+    results = dict()
+    results['stdevs'] = array([statistics.stdev(responses[:,[0]].flatten()), statistics.stdev(responses[:,[1]].flatten())])
+    results['means'] = array([statistics.mean(responses[:,[0]].flatten()), statistics.mean(responses[:,[1]].flatten())])
+    results['convrate'] = statistics.mean(convergence)
 
-    connection.send(response)
+    connection.send(results)
 
 def writerepresentation(funcpath, charas):
     # Save a backup copy of the function file
@@ -229,7 +269,7 @@ def doe(heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args,
         connections[run][1].close()
 
     # display output
-    print("\n\n||||| Responses |||||")
+    print("\n\n||||| Responses: [cpuTime,numCalls] |||||")
     for process in proc: print(process.name + "____\n" + str(responses[process.name]) + "\n_________________")
 
 if __name__ == '__main__':
@@ -244,9 +284,9 @@ if __name__ == '__main__':
     args = {"high": 200, "low": -200, "t": 1000, "p": 0.95}
     scale = 1
         
-    #doe (heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale)
+    doe (heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale)
     
-    representfunc("TestFunctions/Bukin6.py")
+    #representfunc("TestFunctions/Bukin6.py")
 
 
 # %%
