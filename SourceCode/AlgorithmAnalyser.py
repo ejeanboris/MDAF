@@ -2,7 +2,6 @@
 from os import path
 import importlib.util
 import  multiprocessing
-import pathos.multiprocessing as mp
 import time
 import re
 from numpy import random as r
@@ -78,7 +77,7 @@ def measure(heuristicpath, heuristic_name, funcpath, funcname, objs, args, scale
 
 
     # Defining random initial points to start testing the algorithms
-    initpoints = [[r.random() * scale, r.random() * scale] for run in range(3)] #update the inner as [r.random() * scale for i in range(testfuncDimmensions)]
+    initpoints = [[r.random() * scale, r.random() * scale] for run in range(30)] #update the inner as [r.random() * scale for i in range(testfuncDimmensions)]
     # building the iterable arguments
     partfunc = partial(simulate, heuristic_name, heuristicpath, funcname, funcpath, objs, args)
 
@@ -97,7 +96,7 @@ def measure(heuristicpath, heuristic_name, funcpath, funcname, objs, args, scale
     results['numCalls'] = array([statistics.mean(numCalls), statistics.stdev(numCalls)])
     results['convRate'] = array([statistics.mean(converged), statistics.stdev(converged)])
 
-    connection.send(results)
+    connection.send((results,newRun))
 
 def writerepresentation(funcpath, charas):
     # Save a backup copy of the function file
@@ -237,7 +236,6 @@ def representfunc(funcpath):
 
 def doe(heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale):
 
-
     # logic variables to deal with the processes
     proc = []
     connections = {}
@@ -271,10 +269,14 @@ def doe(heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args,
             failedfunctions[run] = process.exitcode
         connections[run][0].close()
         connections[run][1].close()
-
+    
+    
     # display output
     print("\n\n||||| Responses: [mean,stdDev] |||||")
-    for process in proc: print(process.name + "____\n" + str(responses[process.name]) + "\n_________________")
+    for process in proc: print(process.name + "____\n" + str(responses[process.name][0]) + "\n_________________")
+    
+    #return output
+    return responses
 
 if __name__ == '__main__':
     heuristicpath = "SampleAlgorithms/SimmulatedAnnealing.py"
@@ -288,8 +290,8 @@ if __name__ == '__main__':
     args = {"high": 200, "low": -200, "t": 1000, "p": 0.95}
     scale = 1
         
-    doe (heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale)
-    
+    data = doe (heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale)
+    print(data['Bukin2'][1][2])
     #representfunc("TestFunctions/Bukin6.py")
 
 
