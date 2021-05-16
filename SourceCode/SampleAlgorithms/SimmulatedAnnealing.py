@@ -77,7 +77,7 @@ def main(func, obj, S, args):
     #print('the Best Quality obtained was:{}'.format(Quality(Best,y)))
     print("Final Quality is: {}".format(Quality(Best,y,func)))
     print("final Temperature is: {}".format(t))
-    return Best
+    return Quality(Best,y,func)
 
 
 
