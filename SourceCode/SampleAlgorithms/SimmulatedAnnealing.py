@@ -72,7 +72,7 @@ def main(func, obj, S, args):
             route.append(Best[:])
             print(route)
             
-        if t < 0 or Quality(Best,y,func) > 200:
+        if t < 0 or Quality(Best,y,func) > 50:
             break
     #print('the Best Quality obtained was:{}'.format(Quality(Best,y)))
     print("Final Quality is: {}".format(Quality(Best,y,func)))
