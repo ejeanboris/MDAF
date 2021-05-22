@@ -111,7 +111,7 @@ def writerepresentation(funcpath, charas):
     # create a string format of the representation variables
     representation = ''
     for line in list(charas):
-        representation += '\n\t#_# ' + line + ': ' + str(charas[line])
+        representation += '\n\t#_# ' + line + ': ' + str(charas[line]).replace('\n', ',')
     representation+='\n'
 
     # Creating the new docstring to be inserted into the file
@@ -159,18 +159,23 @@ def representfunc(funcpath):
             ###
             lower =-10
             upper = 10
-            X = flacco.createInitialSample(n_obs = 500, dim = 2, control = rlist(init_sample_type = 'lhs', init_sample_lower = lower, init_sample_upper = upper))
+            X = flacco.createInitialSample(n_obs = 500, dim = n, control = rlist(init_sample_type = 'lhs', init_sample_lower = lower, init_sample_upper = upper))
             y = rapply(X, 1, rtestfunc)
             testfuncobj = flacco.createFeatureObject(X = X, y = y, fun = rtestfunc, lower = lower, upper = upper, blocks = 10)
             
-            rawfeats = flacco.calculateFeatureSet(testfuncobj, set='ela_meta')
-
-            pyfeat = asarray(rawfeats)
+            # these are the retained features. Note that some features are being excluded for being problematic and to avoid overcomplicating the neural network
+            # the excluded feature sets are: 'bt', 'ela_level'
+            # feature sets that require special attention: 'cm_angle', 'cm_grad', 'limo', 'gcm' (soo big with some nans), 
+            featureset = ['cm_angle','cm_conv','cm_grad','ela_conv','ela_curv','ela_distr','ela_local','ela_meta','basic','disp','limo','nbc','pca','gcm','ic']
+            pyfeats = dict()
+            for feature in featureset:
+                rawfeats = flacco.calculateFeatureSet(testfuncobj, set=feature)
+                pyfeats[feature] = asarray(rawfeats)
             
             
             
             
-            writerepresentation(funcpath, results)
+            writerepresentation(funcpath, pyfeats)
 
 
     return results
