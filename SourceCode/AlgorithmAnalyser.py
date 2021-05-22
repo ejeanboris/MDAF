@@ -26,6 +26,11 @@ import statistics as st
 from scipy import signal, misc, ndimage
 
 
+def installFalcoo(mirror = 'https://utstat.toronto.edu/cran/'):
+    utils = importr('utils')
+    utils.install_packages('flacco', repos=mirror)
+    utils.install_packages('list', repos=mirror)
+
 class counter:
     #wraps a function, to keep a running count of how many
     #times it's been called
@@ -111,8 +116,8 @@ def writerepresentation(funcpath, charas):
     # create a string format of the representation variables
     representation = ''
     for line in list(charas):
-        representation += '\n\t#_# ' + line + ': ' + str(charas[line]).replace('\n', ',')
-    representation+='\n'
+        representation += '\n\t#_# ' + line + ': ' + repr(charas[line]).replace('\n','')
+    representation+='\n\n\t#_# Represented: 1\n\n'
 
     # Creating the new docstring to be inserted into the file
     with open(funcpath, "r") as file:
@@ -121,7 +126,7 @@ def writerepresentation(funcpath, charas):
         docstrs += representation
         repl = "\\1"+docstrs+"\t\\2"
 
-        # Create the new content of the file to replace the old. Overwriting the whole thing
+        # Create the new content of the file to replace the old. Replacing the whole thing
         pattrn = re.compile("(def main\(.*?\):.*?''').*?('''.*?return\s+.*?\n|$)", flags=re.DOTALL)
         newContent = pattrn.sub(repl, content, count=1)
     # Overwrite the test function file
@@ -138,45 +143,44 @@ def representfunc(funcpath):
 
     # Finding the function characteristics inside the docstring
     if funcmodule.main.__doc__:
-        regex = re.compile("#_#\s?(\w+):\s?([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)")
+        regex = re.compile("#_#\s?(\w+):(.+)?\n") # this regular expression matches the characteristics already specified in the docstring section of the function  -- old exp: "#_#\s?(\w+):\s?([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)"
         characs = re.findall(regex, funcmodule.main.__doc__)
         results = {}
         for charac in characs:
-            results[charac[0]] = float(charac[1])
+            results[charac[0]] = eval(charac[1])
 
         # Automatically generate the representation if the docstrings did not return anything
         if not ('Represented' in results):
             print("Warning, the Representation of the Test Function has not been specified\n===\n******Calculating the Characteristics******")
             n = int(results['dimmensions'])
-            
-            execpath = sys.executable
+
+            # Importing FLACCO using rpy2
+            flacco = importr('flacco')
             
             # creating the r functions
             rlist = robjs.r['list']
             rapply = robjs.r['apply']
+            rvector = robjs.r['c']
+            r_unlist = robjs.r['unlist']
             rtestfunc = rinterface.rternalize(funcmodule.main)
 
             ###
-            lower =-10
-            upper = 10
-            X = flacco.createInitialSample(n_obs = 500, dim = n, control = rlist(init_sample_type = 'lhs', init_sample_lower = lower, init_sample_upper = upper))
+            lower = r_unlist(rvector(results['lower']))
+            upper = r_unlist(rvector(results['upper']))
+            X = flacco.createInitialSample(n_obs = 500, dim = n, control = rlist(**{'init_sample.type' : 'lhs', 'init_sample.lower' : lower, 'init_sample.upper' : upper}))
             y = rapply(X, 1, rtestfunc)
             testfuncobj = flacco.createFeatureObject(X = X, y = y, fun = rtestfunc, lower = lower, upper = upper, blocks = 10)
             
-            # these are the retained features. Note that some features are being excluded for being problematic and to avoid overcomplicating the neural network
+            # these are the retained features. Note that some features are being excluded for being problematic and to avoid overcomplicating the neural network.... the feature sets are redundant and the most relevant ones have been retained
             # the excluded feature sets are: 'bt', 'ela_level'
-            # feature sets that require special attention: 'cm_angle', 'cm_grad', 'limo', 'gcm' (soo big with some nans), 
+            # feature sets that require special attention: 'cm_angle', 'cm_grad', 'limo', 'gcm' (large set with some nans), 
             featureset = ['cm_angle','cm_conv','cm_grad','ela_conv','ela_curv','ela_distr','ela_local','ela_meta','basic','disp','limo','nbc','pca','gcm','ic']
             pyfeats = dict()
             for feature in featureset:
                 rawfeats = flacco.calculateFeatureSet(testfuncobj, set=feature)
                 pyfeats[feature] = asarray(rawfeats)
             
-            
-            
-            
             writerepresentation(funcpath, pyfeats)
-
 
     return results
 
@@ -234,14 +238,7 @@ if __name__ == '__main__':
     # testfunctionpaths = ["/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin4.py"]
     # funcnames = ["Bukin4"]
 
-    # Installing the packages needed for FLACCO
-    utils = importr('utils')
-    #utils.install_packages('flacco', repos='https://utstat.toronto.edu/cran/')
-    #utils.install_packages('list', repos='https://utstat.toronto.edu/cran/')
-    ####utils.install_packages('reticulate', repos='https://utstat.toronto.edu/cran/')
-
-    reticulate = importr('reticulate')
-    flacco = importr('flacco')
+    
 
     objs = 0
     args = {"high": 200, "low": -200, "t": 1000, "p": 0.95}
