@@ -42,7 +42,7 @@ class counter:
         self.count += 1
         return self.func(*args, **kwargs)
 
-def simulate(algName, algPath, funcname, funcpath, objs, args, initpoint):
+def simulate(algName, algPath, funcname, funcpath, args, initpoint):
     # loading the heuristic object into the namespace and memory
     spec = importlib.util.spec_from_file_location(algName, algPath)
     heuristic = importlib.util.module_from_spec(spec)
@@ -63,7 +63,7 @@ def simulate(algName, algPath, funcname, funcpath, objs, args, initpoint):
         #This timer calculates directly the CPU time of the process (Nanoseconds)
         tic = time.process_time_ns()
         # running the test by calling the heuritic script with the test function as argument
-        quality = heuristic.main(testfunc, objs, initpoint, args)
+        quality = heuristic.main(testfunc, initpoint, args)
         toc = time.process_time_ns()
         # ^^ The timer ends right above this; the CPU time is then calculated below by simple difference ^^
 
@@ -78,34 +78,61 @@ def simulate(algName, algPath, funcname, funcpath, objs, args, initpoint):
         converged = 0
     return cpuTime, quality, numCalls, converged
 
-def measure(heuristicpath, heuristic_name, funcpath, funcname, objs, args, scale, connection):
+def measure(heuristicpath, funcpath, args, connection):
     '''
-    This function runs each optimization process of the heuristic with one test function
+    This function runs a set of optimization flows for each test function. it returns the mean and standard deviation of the performance results
     '''
     
+    #defining the heuristic's name
+    heuristic_name = path.splitext(path.basename(heuristicpath))[0]
+
+    #defining the test function's name
+    funcname = path.splitext(path.basename(funcpath))[0]
+
     # Seeding the random module for generating the initial point of the optimizer: Utilising random starting point for experimental validity
     r.seed(int(time.time()))
 
+    # guetting the representation of the function
+    funcChars = representfunc(funcpath)
+
+    n = funcChars['dimmensions']
+    upper = funcChars['upper']
+    lower = funcChars['lower']
+
+    if upper is not list: upper = [upper for i in range(n)]
+    if lower is not list: lower = [lower for i in range(n)]
+
+
+    scale = list()
+    for i in range(n): 
+        scale.append(upper[i] - lower[i])
+
 
     # Defining random initial points to start testing the algorithms
-    initpoints = [[r.random() * scale, r.random() * scale] for run in range(30)] #update the inner as [r.random() * scale for i in range(testfuncDimmensions)]
+    initpoints = [[r.random() * scale[i] + lower[i] for i in range(n)] for run in range(30)] #update the inner as [r.random() * scale for i in range(testfuncDimmensions)]
     # building the iterable arguments
-    partfunc = partial(simulate, heuristic_name, heuristicpath, funcname, funcpath, objs, args)
-
-    with multiprocessing.Pool(processes = 3) as pool:
+    partfunc = partial(simulate, heuristic_name, heuristicpath, funcname, funcpath, args)
+    
+    n_proc = multiprocessing.cpu_count() # Guetting the number of cpus
+    with multiprocessing.Pool(processes = n_proc) as pool:
         # running the simulations
         newRun = pool.map(partfunc,initpoints)
         
-    cpuTime = [resl[0] for resl in newRun]
-    quality = [resl[1] for resl in newRun]
-    numCalls = [resl[2] for resl in newRun]
-    converged = [resl[3] for resl in newRun]
+    cpuTime = array([resl[0] for resl in newRun])
+    quality = array([resl[1] for resl in newRun])
+    numCalls = array([resl[2] for resl in newRun])
+    converged = array([resl[3] for resl in newRun])
+
+    cpuTime = cpuTime[~(isnan(cpuTime))]
+    quality = quality[~(isnan(quality))]
+    numCalls = numCalls[~(isnan(numCalls))]
+    converged = converged[~(isnan(converged))]
     
     results = dict()
-    results['cpuTime'] = array([statistics.mean(cpuTime), statistics.stdev(cpuTime)])
-    results['quality'] = array([statistics.mean(quality), statistics.stdev(quality)])
-    results['numCalls'] = array([statistics.mean(numCalls), statistics.stdev(numCalls)])
-    results['convRate'] = array([statistics.mean(converged), statistics.stdev(converged)])
+    results['cpuTime'] = array([statistics.fmean(cpuTime), statistics.stdev(cpuTime)])
+    results['quality'] = array([statistics.fmean(quality), statistics.stdev(quality)])
+    results['numCalls'] = array([statistics.fmean(numCalls), statistics.stdev(numCalls)])
+    results['convRate'] = array([statistics.fmean(converged), statistics.stdev(converged)])
 
     connection.send((results,newRun))
 
@@ -133,7 +160,7 @@ def writerepresentation(funcpath, charas):
     with open(funcpath,"w") as file:
         file.write(newContent)
 
-def representfunc(funcpath):
+def representfunc(funcpath, forced = False):
     #defining the function name
     funcname = path.splitext(path.basename(funcpath))[0]
     # loading the function to be represented
@@ -153,6 +180,8 @@ def representfunc(funcpath):
         if not ('Represented' in results):
             print("Warning, the Representation of the Test Function has not been specified\n===\n******Calculating the Characteristics******")
             n = int(results['dimmensions'])
+            blocks = int(1+10/n)
+            if blocks< 3: blocks=3
 
             # Importing FLACCO using rpy2
             flacco = importr('flacco')
@@ -164,12 +193,17 @@ def representfunc(funcpath):
             r_unlist = robjs.r['unlist']
             rtestfunc = rinterface.rternalize(funcmodule.main)
 
-            ###
-            lower = r_unlist(rvector(results['lower']))
-            upper = r_unlist(rvector(results['upper']))
-            X = flacco.createInitialSample(n_obs = 500, dim = n, control = rlist(**{'init_sample.type' : 'lhs', 'init_sample.lower' : lower, 'init_sample.upper' : upper}))
+            # Verify if a list of limits has been specified for all dimensions or if all dimensions will use the same boundaries
+            if (type(results['lower']) is list): 
+                lowerval = r_unlist(rvector(results['lower']))
+                upperval = r_unlist(rvector(results['upper']))
+            else:
+                lowerval = results['lower']
+                upperval = results['upper']
+
+            X = flacco.createInitialSample(n_obs = 500, dim = n, control = rlist(**{'init_sample.type' : 'lhs', 'init_sample.lower' : lowerval, 'init_sample.upper' : upperval}))
             y = rapply(X, 1, rtestfunc)
-            testfuncobj = flacco.createFeatureObject(X = X, y = y, fun = rtestfunc, lower = lower, upper = upper, blocks = 10)
+            testfuncobj = flacco.createFeatureObject(**{'X': X, 'y': y, 'fun': rtestfunc, 'lower': lowerval, 'upper': upperval, 'blocks': blocks, 'force': forced})
             
             # these are the retained features. Note that some features are being excluded for being problematic and to avoid overcomplicating the neural network.... the feature sets are redundant and the most relevant ones have been retained
             # the excluded feature sets are: 'bt', 'ela_level'
@@ -186,7 +220,13 @@ def representfunc(funcpath):
 
 
 
-def doe(heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale):
+def doe(heuristicpath, testfunctionpaths, args):
+
+    #defining the function's name
+    funcnames = [path.splitext(path.basename(funcpath))[0] for funcpath in testfunctionpaths]
+
+    #defining the heuristic's name
+    heuristic_name = path.splitext(path.basename(heuristicpath))[0]
 
     # logic variables to deal with the processes
     proc = []
@@ -197,20 +237,18 @@ def doe(heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args,
         funcname = funcnames[idx]
         # Creating the connection objects for communication between the heuristic and this module
         connections[funcname] = multiprocessing.Pipe(duplex=False)
-        proc.append(multiprocessing.Process(target=measure, name=funcname, args=(heuristicpath, heuristic_name, funcpath, funcname, objs, args, scale, connections[funcname][1])))
+        proc.append(multiprocessing.Process(target=measure, name=funcname, args=(heuristicpath, funcpath, args, connections[funcname][1])))
 
     # defining the response variables
     responses = {}
     failedfunctions = {}
     processtiming = {}
 
-    # defining some logic variables
-
+    # Starting the subprocesses for each testfunction
     for idx,process in enumerate(proc):
         process.start()
 
-    # Waiting for all the runs to be
-    # multiprocessing.connection.wait([process.sentinel for process in proc])
+    # Waiting for all the runs to be done
     for process in proc: process.join()
 
     for process in proc:
@@ -227,26 +265,8 @@ def doe(heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args,
     print("\n\n||||| Responses: [mean,stdDev] |||||")
     for process in proc: print(process.name + "____\n" + str(responses[process.name][0]) + "\n_________________")
     
-    #return output
+    #return the performance values
     return responses
-
-if __name__ == '__main__':
-    heuristicpath = "SampleAlgorithms/SimmulatedAnnealing.py"
-    heuristic_name = "SimmulatedAnnealing"
-    testfunctionpaths = ["TestFunctions/Bukin2.py", "TestFunctions/Bukin4.py", "TestFunctions/Brown.py"]
-    funcnames = ["Bukin2", "Bukin4", "Brown"]
-    # testfunctionpaths = ["/home/remi/Documents/MDAF-GitLAB/SourceCode/TestFunctions/Bukin4.py"]
-    # funcnames = ["Bukin4"]
-
-    
-
-    objs = 0
-    args = {"high": 200, "low": -200, "t": 1000, "p": 0.95}
-    scale = 1
-        
-    # data = doe (heuristicpath, heuristic_name, testfunctionpaths, funcnames, objs, args, scale)
-    # print([point[2] for point in data['Bukin2'][1]])
-    representfunc("TestFunctions/Bukin2.py")
 
 
 # %%

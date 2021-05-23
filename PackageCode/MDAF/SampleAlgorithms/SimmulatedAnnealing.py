@@ -31,15 +31,15 @@ def Quality(Sc,objective,func):
         print("Error is: "+str(error))
     return 1/abs(error)
 
-def main(func, obj, S, args):
+def main(func, S, args):
     r.seed(int(time.time()))
     route = list()
     #Parsing arguments
-    y = obj
-    high = args["high"]
-    low = args["low"]
+    y = args["objs"]
     t = args["t"]
     p = args["p"]
+    high = 20
+    low = -20
     
     Best = list()
     Best[:] = cp.deepcopy(S)
@@ -47,7 +47,7 @@ def main(func, obj, S, args):
     route.append(Best[:])
     while True:
         print('\n\n\n')
-        R = tweak(cp.deepcopy(S),p,sigma,high,low)
+        R = tweak(cp.deepcopy(S),p,sigma,high, low)
         print(R)
         print(S)
         Qr = Quality(R,y,func)
