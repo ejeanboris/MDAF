@@ -219,8 +219,8 @@ def representfunc(funcpath, forced = False):
 
 
 def doe(heuristicpath, testfunctionpaths, args):
-    for i,path in enumerate(testfunctionpaths):
-        if path.find('@') == 0:
+    for i,funpath in enumerate(testfunctionpaths):
+        if funpath.find('@') == 0:
             testfunctionpaths[i] = path.dirname(__file__) + '/TestFunctions/' + testfunctionpaths[1:]
 
     if (heuristicpath.find('@') == 0): heuristicpath = path.dirname(__file__) + '/TestFunctions/' + heuristicpath[1:]
