@@ -96,7 +96,7 @@ def measure(heuristicpath, funcpath, args, connection):
     lower = funcChars['lower']
 
     if upper is not list: 
-        print(type(upper) 
+        print(type(upper))
         upper = [upper for i in range(n)]
     if lower is not list: lower = [lower for i in range(n)]
 
