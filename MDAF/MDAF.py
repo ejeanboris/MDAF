@@ -172,7 +172,7 @@ def representfunc(funcpath, forced = False):
         characs = re.findall(regex, funcmodule.main.__doc__)
         results = {}
         for charac in characs:
-            results[charac[0]] = eval(charac[1])
+            results[charac[0]] = eval(charac[1].replace('nan','NaN'))
 
         # Automatically generate the representation if the docstrings did not return anything
         if not ('Represented' in results):
