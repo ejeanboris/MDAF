@@ -157,6 +157,8 @@ def writerepresentation(funcpath, charas):
         file.write(newContent)
 
 def representfunc(funcpath, forced = False):
+    if (funcpath.find('@') == 0): funcpath = path.dirname(__file__) + '/TestFunctions/' + funcpath[1:]
+
     #defining the function name
     funcname = path.splitext(path.basename(funcpath))[0]
     # loading the function to be represented
@@ -217,6 +219,8 @@ def representfunc(funcpath, forced = False):
 
 
 def doe(heuristicpath, testfunctionpaths, args):
+    for i,path in enumerate(testfunctionpaths): if (path.find('@') == 0): testfunctionpaths[i] = path.dirname(__file__) + '/TestFunctions/' + testfunctionpaths[1:]
+    if (heuristicpath.find('@') == 0): heuristicpath = path.dirname(__file__) + '/TestFunctions/' + heuristicpath[1:]
 
     #defining the function's name
     funcnames = [path.splitext(path.basename(funcpath))[0] for funcpath in testfunctionpaths]

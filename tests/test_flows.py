@@ -9,20 +9,39 @@ from MDAF.MDAF import doe
 
 # Testing the test function representation workflow
 class Test_representfunc(unittest.TestCase):
-    def testoutput(self):
+    def testexternalfuncs(self):
         """
         Test that the function can calculate the representation and write to the function docstring
         """
         funcpath = 'tests/Bukin2.py'
-        funcpath_backup = 'tests/Bukin2.py.old'
+        #funcpath_backup = 'tests/Bukin2.py.old'
+
         results = representfunc(funcpath, forced = True)
 
         with open(funcpath,"r") as file:
             content = file.read()
             reprCheck = bool(content.find('#_# Represented: 1'))
 
-        os.remove(funcpath) 
-        os.replace(funcpath_backup, funcpath)
+        #os.remove(funcpath) 
+        #os.replace(funcpath_backup, funcpath)
+        self.assertTrue(reprCheck)
+        self.assertIsInstance(results, dict)
+    
+    def testinternalfuncs(self):
+        """
+        Test that the function can calculate the representation and write to the function docstring
+        """
+        funcpath = '@Bukin2.py'
+        #funcpath_backup = 'tests/Bukin2.py.old'
+
+        results = representfunc(funcpath, forced = True)
+
+        with open(funcpath,"r") as file:
+            content = file.read()
+            reprCheck = bool(content.find('#_# Represented: 1'))
+
+        #os.remove(funcpath) 
+        #os.replace(funcpath_backup, funcpath)
         self.assertTrue(reprCheck)
         self.assertIsInstance(results, dict)
 
@@ -39,7 +58,7 @@ class Test_flaccoInstall(unittest.TestCase):
 
 # Testing the DOE execution workflow
 class Test_DOE(unittest.TestCase):
-    def testoutput(self):
+    def testexternalfuncs(self):
         """
         Test that it can execute a DOE and output the dictionarry of the results
         """
@@ -47,6 +66,17 @@ class Test_DOE(unittest.TestCase):
         heuristicpath = "tests/SimmulatedAnnealing.py"
         args = {"t": 1000, "p": 0.95, "objs": 0}
         data = doe (heuristicpath, testfunctionpaths, args)
+        self.assertIsInstance(data, dict)
+    
+    def testinternalfuncs(self):
+        """
+        Test that it can execute a DOE and output the dictionarry of the results
+        """
+        testfunctionpaths = ["@Bukin2.py"]
+        heuristicpath = "@SimmulatedAnnealing.py"
+        args = {"t": 1000, "p": 0.95, "objs": 0}
+        data = doe (heuristicpath, testfunctionpaths, args)
+        print(data)
         self.assertIsInstance(data, dict)
 
 
