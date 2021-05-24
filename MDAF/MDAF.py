@@ -95,11 +95,11 @@ def measure(heuristicpath, funcpath, args, connection):
     upper = funcChars['upper']
     lower = funcChars['lower']
 
-    if upper is not list: upper = [upper for i in range(n)]
+    if upper is not list: 
+        print(type(upper) 
+        upper = [upper for i in range(n)]
     if lower is not list: lower = [lower for i in range(n)]
 
-    print(upper)
-    print(lower)
     scale = list()
     for i in range(n): 
         scale.append(upper[i] - lower[i])
