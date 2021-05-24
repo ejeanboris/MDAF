@@ -95,8 +95,8 @@ def measure(heuristicpath, funcpath, args, connection):
     upper = funcChars['upper']
     lower = funcChars['lower']
 
-    if isinstance(upper, list): upper = [upper for i in range(n)]
-    if isinstance(lower, list): lower = [lower for i in range(n)]
+    if not isinstance(upper, list): upper = [upper for i in range(n)]
+    if not isinstance(lower, list): lower = [lower for i in range(n)]
 
     scale = list()
     for i in range(n): 
