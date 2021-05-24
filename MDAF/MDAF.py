@@ -5,16 +5,13 @@ import importlib.util
 import  multiprocessing
 import time
 import re
-from numpy import random as r
-from numpy import *
+from numpy import random as rand
+from numpy import array, isnan, NaN, asarray
 import statistics
 from functools import partial
 import shutil
 
 # Surrogate modelling
-import itertools
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 # Test function representation
 from rpy2 import robjects as robjs
@@ -23,7 +20,6 @@ from rpy2 import rinterface
 
 # Test function characteristics
 import statistics as st
-from scipy import signal, misc, ndimage
 
 
 def installFalcoo(mirror = 'https://utstat.toronto.edu/cran/'):
@@ -90,7 +86,7 @@ def measure(heuristicpath, funcpath, args, connection):
     funcname = path.splitext(path.basename(funcpath))[0]
 
     # Seeding the random module for generating the initial point of the optimizer: Utilising random starting point for experimental validity
-    r.seed(int(time.time()))
+    rand.seed(int(time.time()))
 
     # guetting the representation of the function
     funcChars = representfunc(funcpath)
@@ -109,7 +105,7 @@ def measure(heuristicpath, funcpath, args, connection):
 
 
     # Defining random initial points to start testing the algorithms
-    initpoints = [[r.random() * scale[i] + lower[i] for i in range(n)] for run in range(30)] #update the inner as [r.random() * scale for i in range(testfuncDimmensions)]
+    initpoints = [[rand.random() * scale[i] + lower[i] for i in range(n)] for run in range(30)] #update the inner as [rand.random() * scale for i in range(testfuncDimmensions)]
     # building the iterable arguments
     partfunc = partial(simulate, heuristic_name, heuristicpath, funcname, funcpath, args)
     
@@ -149,12 +145,12 @@ def writerepresentation(funcpath, charas):
     # Creating the new docstring to be inserted into the file
     with open(funcpath, "r") as file:
         content = file.read()
-        docstrs = re.findall("def main\(.*?\):.*?'''(.*?)'''.*?return\s+.*?", content, re.DOTALL)[0]
+        docstrs = re.findall(r"def main\(.*?\):.*?'''(.*?)'''.*?return\s+.*?", content, re.DOTALL)[0]
         docstrs += representation
         repl = "\\1"+docstrs+"\t\\2"
 
         # Create the new content of the file to replace the old. Replacing the whole thing
-        pattrn = re.compile("(def main\(.*?\):.*?''').*?('''.*?return\s+.*?\n|$)", flags=re.DOTALL)
+        pattrn = re.compile(r"(def main\(.*?\):.*?''').*?('''.*?return\s+.*?\n|$)", flags=re.DOTALL)
         newContent = pattrn.sub(repl, content, count=1)
     # Overwrite the test function file
     with open(funcpath,"w") as file:
@@ -170,7 +166,7 @@ def representfunc(funcpath, forced = False):
 
     # Finding the function characteristics inside the docstring
     if funcmodule.main.__doc__:
-        regex = re.compile("#_#\s?(\w+):(.+)?\n") # this regular expression matches the characteristics already specified in the docstring section of the function  -- old exp: "#_#\s?(\w+):\s?([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)"
+        regex = re.compile(r"#_#\s?(\w+):(.+)?\n") # this regular expression matches the characteristics already specified in the docstring section of the function  -- old exp: "#_#\s?(\w+):\s?([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)"
         characs = re.findall(regex, funcmodule.main.__doc__)
         results = {}
         for charac in characs:
@@ -226,7 +222,7 @@ def doe(heuristicpath, testfunctionpaths, args):
     funcnames = [path.splitext(path.basename(funcpath))[0] for funcpath in testfunctionpaths]
 
     #defining the heuristic's name
-    heuristic_name = path.splitext(path.basename(heuristicpath))[0]
+    #heuristic_name = path.splitext(path.basename(heuristicpath))[0]
 
     # logic variables to deal with the processes
     proc = []
@@ -242,7 +238,6 @@ def doe(heuristicpath, testfunctionpaths, args):
     # defining the response variables
     responses = {}
     failedfunctions = {}
-    processtiming = {}
 
     # Starting the subprocesses for each testfunction
     for idx,process in enumerate(proc):
