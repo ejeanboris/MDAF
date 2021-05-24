@@ -157,6 +157,7 @@ def writerepresentation(funcpath, charas):
 
 def representfunc(funcpath, forced = False):
     if (funcpath.find('@') == 0): funcpath = path.dirname(__file__) + '/TestFunctions/' + funcpath[1:]
+    print(funcpath)
 
     #defining the function name
     funcname = path.splitext(path.basename(funcpath))[0]
