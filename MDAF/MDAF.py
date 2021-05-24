@@ -222,7 +222,7 @@ def doe(heuristicpath, testfunctionpaths, args):
         if funpath.find('@') == 0:
             testfunctionpaths[i] = path.dirname(__file__) + '/TestFunctions/' + funpath[1:]
 
-    if (heuristicpath.find('@') == 0): heuristicpath = path.dirname(__file__) + '/TestFunctions/' + heuristicpath[1:]
+    if (heuristicpath.find('@') == 0): heuristicpath = path.dirname(__file__) + '/SampleAlgorithms/' + heuristicpath[1:]
 
     #defining the function's name
     funcnames = [path.splitext(path.basename(funcpath))[0] for funcpath in testfunctionpaths]
