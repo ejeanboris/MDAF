@@ -269,5 +269,19 @@ def doe(heuristicpath, testfunctionpaths, args):
     #return the performance values
     return responses
 
+def plotfuncs(funcpaths, features):
+    print ('help')
+    for i,funpath in enumerate(funcpaths):
+        if funpath.find('@') == 0:
+            funcpaths[i] = path.dirname(__file__) + '/TestFunctions/' + funpath[1:]
+    
+    funcnames = [path.splitext(path.basename(funcpath))[0] for funcpath in funcpaths]
+    representations = {}
+
+    for idx,funpath in enumerate(funcpaths):
+        representations[funcnames[idx]] = representfunc(funpath)
+
+
+
 
 # %%

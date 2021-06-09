@@ -3,10 +3,14 @@ import math
 
 def main(args):
     '''
-    >>>main([0, 1, 1, 1])
-    0
+    >>> main([0, 1, 1, 1])
+    0.0
     
-     #_# dimmensions: 4
+    #_# dimmensions: 4
+	#_# upper: 1
+	#_# lower: -1
+	#_# minimum: [0, 1, 1, 1]
+    
     '''
     for x in args:
         if x < -1 or x > 1:

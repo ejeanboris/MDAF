@@ -5,6 +5,9 @@ import math
 def main(args):
     '''
     #_# dimmensions: 2
+	#_# upper: 10
+	#_# lower: 0
+	#_# minimum: [0, 1.39325]
     '''
     for x in args:
         if(x<0 | x>10): return 0

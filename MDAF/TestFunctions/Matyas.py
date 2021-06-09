@@ -5,7 +5,10 @@ def main(args):
     0.26
 
     
-     #_# dimmensions: 2
+    #_# dimmensions: 2
+	#_# upper: 10
+	#_# lower: -10
+	#_# minimum: [0, 0]
     '''
     for x in args:
         if x < -10 or x > 10:

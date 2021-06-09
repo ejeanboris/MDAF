@@ -1,10 +1,13 @@
 import math
 def main(args):
     '''
-    >>>main([-0.547, -1.547])
+    >>> main([-0.547, -1.547])
     0
     
-     #_# dimmensions: 2
+    #_# dimmensions: 2 
+	#_# upper: [4, 3]
+	#_# lower: [-1.5, -3]
+	#_# minimum: [-0.547, -1.547]
     
     '''
     for args[0] in args:

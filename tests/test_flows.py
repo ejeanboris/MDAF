@@ -4,6 +4,7 @@ import os
 from MDAF.MDAF import representfunc
 from MDAF.MDAF import installFalcoo
 from MDAF.MDAF import doe
+from MDAF.TestFunctions import *
 
 #target = __import__("MDAF.py")
 
@@ -32,11 +33,12 @@ class Test_representfunc(unittest.TestCase):
         Test that the function can calculate the representation and write to the function docstring
         """
         funcpath = '@Bukin2.py'
+        funcverify = 'MDAF/TestFunctions/Bukin2.py'
         #funcpath_backup = 'tests/Bukin2.py.old'
 
         results = representfunc(funcpath, forced = True)
 
-        with open(funcpath,"r") as file:
+        with open(funcverify,"r") as file:
             content = file.read()
             reprCheck = bool(content.find('#_# Represented: 1'))
 
