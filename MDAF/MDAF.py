@@ -270,7 +270,7 @@ def doe(heuristicpath, testfunctionpaths, args):
     #return the performance values
     return responses
 
-def plotfuncs(funcpaths, feature):
+def plotfuncs(funcpaths, feature, low_limit = 0, high_limit = 200):
     pi = 3.141592653589793
     for i,funpath in enumerate(funcpaths):
         if funpath.find('@') == 0:
@@ -311,11 +311,14 @@ def plotfuncs(funcpaths, feature):
 
     # y ticks
     # set dynamic scaling for each dimension
-    plt.ylim(0,200)
+    plt.ylim(low_limit,high_limit)
 
     plt.title("Radar Plot of the "+feature+ " feature for the following Functions")
     plt.legend()
     plt.show(block=True)
     return representations
 
+
+if __name__== "__main__":
+    plotfuncs(['@Bukin2.py','@Bukin6.py'], 'ela_meta')
 # %%
