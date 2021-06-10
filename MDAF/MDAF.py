@@ -130,7 +130,7 @@ def measure(heuristicpath, funcpath, args, connection):
     results['numCalls'] = array([statistics.fmean(numCalls), statistics.stdev(numCalls)])
     results['convRate'] = array([statistics.fmean(converged), statistics.stdev(converged)])
 
-    connection.send((results,newRun))
+    connection.send((results,newRun,funcChars))
 
 def writerepresentation(funcpath, charas):
     # Save a backup copy of the function file
@@ -314,10 +314,15 @@ def plotfuncs(funcpaths, feature, low_limit = 0, high_limit = 200):
     plt.ylim(low_limit,high_limit)
 
     plt.title("Radar Plot of the "+feature+ " feature for the following Functions")
-    plt.legend()
+    plt.legend(funcnames)
     plt.show(block=True)
     return representations
 
+def model(feature, doe_data):
+    funcpaths = []
+    for i,funcname in enumerate(doe_data.keys):
+        if funpath.find('@') == 0:
+            funcpaths[i] = path.dirname(__file__) + '/TestFunctions/' + funpath[1:]
 
 if __name__== "__main__":
     plotfuncs(['@Bukin2.py','@Bukin6.py'], 'ela_meta')
