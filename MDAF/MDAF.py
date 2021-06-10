@@ -11,7 +11,8 @@ import statistics
 from functools import partial
 import shutil
 
-# Surrogate modelling
+# Surrogate modelling and plotting
+import matplotlib.pyplot as plt
 
 # Test function representation
 from rpy2 import robjects as robjs
@@ -269,8 +270,8 @@ def doe(heuristicpath, testfunctionpaths, args):
     #return the performance values
     return responses
 
-def plotfuncs(funcpaths, features):
-    print ('help')
+def plotfuncs(funcpaths, feature):
+    pi = 3.141592653589793
     for i,funpath in enumerate(funcpaths):
         if funpath.find('@') == 0:
             funcpaths[i] = path.dirname(__file__) + '/TestFunctions/' + funpath[1:]
@@ -279,9 +280,42 @@ def plotfuncs(funcpaths, features):
     representations = {}
 
     for idx,funpath in enumerate(funcpaths):
-        representations[funcnames[idx]] = representfunc(funpath)
+        representations[funcnames[idx]] = representfunc(funpath)[feature]
+    
+    # generate a list of the categories of the plot
+    elements = list(representations.values())
+    categories = [str(i) for i in list(range(len(elements[0])))]
 
+    # creating the plot figure
+    fig = plt.figure(figsize = (12,8))
+    ax = plt.subplot(polar = "True")
 
+    for idx, func in enumerate(representations):
+        vals = representations[func]
+        vals = [float(v) for v in vals]
 
+        # get the number of dims of the plot
+        N = len(vals)
+        # repeat the first value to close the circle
+        vals +=  vals[:1]
+        #calculate the angles for each category
+        angles = [n/float(N)*2*pi for n in range(N)]
+        angles += angles[:1]
+        #creating the polar plot
+        ax.plot(angles,vals)
+
+    # X ticks
+    plt.xticks(angles[:-1], categories)
+
+    #ax.set_rlabel_position(0)
+
+    # y ticks
+    # set dynamic scaling for each dimension
+    plt.ylim(0,200)
+
+    plt.title("Radar Plot of the "+feature+ " feature for the following Functions")
+    plt.legend()
+    plt.show(block=True)
+    return representations
 
 # %%
