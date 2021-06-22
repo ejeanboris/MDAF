@@ -25,7 +25,7 @@ from rpy2 import rinterface
 import statistics as st
 
 
-def installFalcoo(mirror = 'https://utstat.toronto.edu/cran/'):
+def installFlacco(mirror = 'https://utstat.toronto.edu/cran/'):
     utils = importr('utils')
     utils.install_packages('flacco', repos=mirror)
     utils.install_packages('list', repos=mirror)
