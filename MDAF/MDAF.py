@@ -13,6 +13,8 @@ import shutil
 
 # Surrogate modelling and plotting
 import matplotlib.pyplot as plt
+from sklearn.neural_network import MLPRegressor
+from sklearn.model_selection import train_test_split
 
 # Test function representation
 from rpy2 import robjects as robjs
@@ -27,6 +29,11 @@ def installFalcoo(mirror = 'https://utstat.toronto.edu/cran/'):
     utils = importr('utils')
     utils.install_packages('flacco', repos=mirror)
     utils.install_packages('list', repos=mirror)
+    utils.install_packages('lhs', repos=mirror)
+    utils.install_packages('plyr', repos=mirror)
+    utils.install_packages('RANN', repos=mirror)
+    utils.install_packages('numDeriv', repos=mirror)
+    utils.install_packages('e1071', repos=mirror)
 
 class counter:
     #wraps a function, to keep a running count of how many
@@ -75,7 +82,7 @@ def simulate(algName, algPath, funcname, funcpath, args, initpoint):
         converged = 0
     return cpuTime, quality, numCalls, converged
 
-def measure(heuristicpath, funcpath, args, connection):
+def measure(heuristicpath, funcpath, args, connection, sampleSize = 30):
     '''
     This function runs a set of optimization flows for each test function. it returns the mean and standard deviation of the performance results
     '''
@@ -105,7 +112,7 @@ def measure(heuristicpath, funcpath, args, connection):
 
 
     # Defining random initial points to start testing the algorithms
-    initpoints = [[rand.random() * scale[i] + lower[i] for i in range(n)] for run in range(30)] #update the inner as [rand.random() * scale for i in range(testfuncDimmensions)]
+    initpoints = [[rand.random() * scale[i] + lower[i] for i in range(n)] for run in range(sampleSize)] #update the inner as [rand.random() * scale for i in range(testfuncDimmensions)]
     # building the iterable arguments
     partfunc = partial(simulate, heuristic_name, heuristicpath, funcname, funcpath, args)
     
@@ -218,7 +225,7 @@ def representfunc(funcpath, forced = False):
 
 
 
-def doe(heuristicpath, testfunctionpaths, args):
+def doe(heuristicpath, testfunctionpaths, args, measurementSampleSize = 30):
     for i,funpath in enumerate(testfunctionpaths):
         if funpath.find('@') == 0:
             testfunctionpaths[i] = path.dirname(__file__) + '/TestFunctions/' + funpath[1:]
@@ -240,7 +247,7 @@ def doe(heuristicpath, testfunctionpaths, args):
         funcname = funcnames[idx]
         # Creating the connection objects for communication between the heuristic and this module
         connections[funcname] = multiprocessing.Pipe(duplex=False)
-        proc.append(multiprocessing.Process(target=measure, name=funcname, args=(heuristicpath, funcpath, args, connections[funcname][1])))
+        proc.append(multiprocessing.Process(target=measure, name=funcname, args=(heuristicpath, funcpath, args, connections[funcname][1], measurementSampleSize)))
 
     # defining the response variables
     responses = {}
@@ -318,12 +325,22 @@ def plotfuncs(funcpaths, feature, low_limit = 0, high_limit = 200):
     plt.show(block=True)
     return representations
 
-def model(feature, doe_data):
-    funcpaths = []
-    for i,funcname in enumerate(doe_data.keys):
-        if funpath.find('@') == 0:
-            funcpaths[i] = path.dirname(__file__) + '/TestFunctions/' + funpath[1:]
+def model(features, doe_data):
+
+    X_train, X_test, y_train, y_test = train_test_split(features, doe_data, random_state=1)
+
+    regr = MLPRegressor(random_state=1, max_iter=500).fit(X_train, y_train)
+
+    score = regr.score(X_test, y_test)
+    return (score, regr)
+    
 
 if __name__== "__main__":
-    plotfuncs(['@Bukin2.py','@Bukin6.py'], 'ela_meta')
+    #plotfuncs(['@Bukin2.py','@Bukin6.py'], 'ela_meta')
+    testfuns = ['@Bukin2.py','@Bukin4.py','@Leon.py']
+    perf = doe('@SimmulatedAnnealing.py', testfuns,{"t": 1000, "p": 0.95, "objs": 0},measurementSampleSize=2)
+
+    feats = [representfunc(testfun)['ela_meta'] for testfun in testfuns]
+
+    features = array(feats)
 # %%
