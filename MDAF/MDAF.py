@@ -6,7 +6,7 @@ import  multiprocessing
 import time
 import re
 from numpy import random as rand
-from numpy import array, isnan, NaN, asarray
+from numpy import array, isnan, NaN, asarray, linspace, append, meshgrid, ndarray
 import statistics
 from functools import partial
 import shutil
@@ -130,12 +130,13 @@ def measure(heuristicpath, funcpath, args, connection, sampleSize = 30):
     quality = quality[~(isnan(quality))]
     numCalls = numCalls[~(isnan(numCalls))]
     converged = converged[~(isnan(converged))]
+
     
     results = dict()
-    results['cpuTime'] = array([statistics.fmean(cpuTime), statistics.stdev(cpuTime)])
-    results['quality'] = array([statistics.fmean(quality), statistics.stdev(quality)])
-    results['numCalls'] = array([statistics.fmean(numCalls), statistics.stdev(numCalls)])
-    results['convRate'] = array([statistics.fmean(converged), statistics.stdev(converged)])
+    results['cpuTime'] = array([statistics.fmean(cpuTime), statistics.stdev(cpuTime)]) if cpuTime.size > 0 else array([])
+    results['quality'] = array([statistics.fmean(quality), statistics.stdev(quality)]) if quality.size > 0 else array([])
+    results['numCalls'] = array([statistics.fmean(numCalls), statistics.stdev(numCalls)]) if numCalls.size > 0 else array([])
+    results['convRate'] = array([statistics.fmean(converged), statistics.stdev(converged)]) if converged.size > 0 else array([])
 
     connection.send((results,newRun,funcChars))
 
@@ -220,6 +221,10 @@ def representfunc(funcpath, forced = False):
                 pyfeats[feature] = asarray(rawfeats)
             
             writerepresentation(funcpath, pyfeats)
+            
+    for feat in results.keys():
+        if isinstance(results[feat],ndarray):
+            results[feat] =  results[feat].reshape(results[feat].shape[:-1])
 
     return results
 
@@ -325,6 +330,29 @@ def plotfuncs(funcpaths, feature, low_limit = 0, high_limit = 200):
     plt.show(block=True)
     return representations
 
+def visualize2D(funcpath, min = -10, max=10):
+    if funcpath.find('@') == 0:
+        funcpath = path.dirname(__file__) + '/TestFunctions/' + funcpath[1:]
+    
+    # loading the test function object into the namespace and memory
+    testspec = importlib.util.spec_from_file_location(path.splitext(path.basename(funcpath))[0], funcpath)
+    func = importlib.util.module_from_spec(testspec)
+    testspec.loader.exec_module(func)
+
+    # create the 2D mx
+    x = linspace(min,max)
+    y = linspace(min,max)
+    X, Y = meshgrid(x, y)
+    vals = array([[X[i][j],Y[i][j]] for i in range(X.shape[0]) for j in range(X.shape[1])])
+    z = array([func.main(arg) for arg in vals])
+    Z = z.reshape([50,50])
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    ax.plot_surface(X,Y,Z)
+    plt.show()
+
+
+
 def model(features, doe_data):
 
     X_train, X_test, y_train, y_test = train_test_split(features, doe_data, random_state=1)
@@ -336,11 +364,13 @@ def model(features, doe_data):
     
 
 if __name__== "__main__":
+    testfuns =  ['@Ackley2.py', '@Alpine.py', '@Brown.py', '@Bukin2.py', '@Bukin4.py', '@Bukin6.py', '@Easom.py', '@Keane.py', '@Leon.py', '@Matyas.py', '@McCormick.py', '@Miele_Cantrell.py', '@Periodic.py', '@PowellSingular2.py', '@Price1.py', '@Price2.py', '@Quartic.py', '@Rastriring.py', '@Scahffer.py', '@Schwefel.py', '@Sphere.py', '@Step.py', '@Step2.py', '@Styblinski-Tang.py', '@SumSquare.py', '@Wayburn.py', '@Zettle.py', '@Zirilli.py']
+    #visualize2D('@Easom.py', -10,10)
+    #feats = array([representfunc(testfun)['ela_meta'] for testfun in testfuns[7:10]])
     #plotfuncs(['@Bukin2.py','@Bukin6.py'], 'ela_meta')
-    testfuns = ['@Bukin2.py','@Bukin4.py','@Leon.py']
-    perf = doe('@SimmulatedAnnealing.py', testfuns,{"t": 1000, "p": 0.95, "objs": 0},measurementSampleSize=2)
+    #perf = doe('@SimmulatedAnnealing.py', testfuns[3:4],{"t": 1000, "p": 0.95, "objs": 0},measurementSampleSize=30)
 
-    feats = [representfunc(testfun)['ela_meta'] for testfun in testfuns]
-
-    features = array(feats)
+    #perfs = array([[perf[func][0]['cpuTime'][0], perf[func][0]['numCalls'][0], perf[func][0]['quality'][0], perf[func][0]['convRate'][0]] for func in perf.keys()])
+    #features = array(feats)
+    #model(features, perfs)
 # %%

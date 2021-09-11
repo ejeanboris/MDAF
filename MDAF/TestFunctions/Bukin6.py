@@ -3,6 +3,9 @@ from math import sqrt, fabs
 
 def main(args):
     '''
+	>>> (main([-10,1]) - 0)<0.001
+	True
+
     #_# dimmensions: 2
 	#_# upper: [-5, 3]
 	#_# lower: [-15, -3]
@@ -29,3 +32,7 @@ def main(args):
 
 	'''
     return 100*sqrt(fabs(args[1]-0.01*args[0]**2))+0.01*fabs(args[0]+10)
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

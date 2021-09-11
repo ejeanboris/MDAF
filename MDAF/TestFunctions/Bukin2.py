@@ -1,6 +1,9 @@
 def main(args):
     '''  
-	
+	>>> (main([-10,0]) - 0)<0.001
+	True
+
+
 	#_# dimmensions: 2
 	#_# upper: [-5, 3]
 	#_# lower: [-15, -3]
@@ -27,3 +30,7 @@ def main(args):
 
 	'''
     return 100*(args[1]-0.01*args[0]**2+1)+0.01*(args[0]+10)**2
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

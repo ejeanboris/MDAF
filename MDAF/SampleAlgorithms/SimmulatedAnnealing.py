@@ -28,7 +28,7 @@ def Quality(Sc,objective,func):
         error = [func_output[i]-objective[i] for i in range(len(func_output))]
     else:
         error = func_output - objective
-        print("Error is: "+str(error))
+        #print("Error is: "+str(error))
     return 1/abs(error)
 
 def main(func, S, args):
@@ -48,35 +48,35 @@ def main(func, S, args):
     while True:
         print('\n\n\n')
         R = tweak(cp.deepcopy(S),p,sigma,high, low)
-        print(R)
-        print(S)
+        #print(R)
+        #print(S)
         Qr = Quality(R,y,func)
         Qs = Quality(S,y,func)
         try:
             P = m.e**((Qr-Qs)/t)
         except:
             pass
-        print('QUALITY_R///{}'.format(Qr))
-        print('QUALITY_S///{}'.format(Qs))
-        print('fraction is:{}'.format(P))
+        #print('QUALITY_R///{}'.format(Qr))
+        #print('QUALITY_S///{}'.format(Qs))
+        #print('fraction is:{}'.format(P))
         if (Qr > Qs) or (r.random() < P):
-            print('NEW_S')
+            #print('NEW_S')
             S[:] = R[:]
         if t > 0.01:
             t-= t/10
-        print('t = {}'.format(t))
+        #print('t = {}'.format(t))
         
         if (Quality(S,y,func) > Quality(Best,y,func)):
-            print('new Best****:{}'.format(Best))
+            #print('new Best****:{}'.format(Best))
             Best[:] = S[:]
             route.append(Best[:])
-            print(route)
+            #print(route)
             
         if t < 0 or Quality(Best,y,func) > 50:
             break
     #print('the Best Quality obtained was:{}'.format(Quality(Best,y)))
-    print("Final Quality is: {}".format(Quality(Best,y,func)))
-    print("final Temperature is: {}".format(t))
+    #print("Final Quality is: {}".format(Quality(Best,y,func)))
+    #print("final Temperature is: {}".format(t))
     return Quality(Best,y,func)
 
 

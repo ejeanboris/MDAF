@@ -2,9 +2,7 @@ import unittest
 import os
 
 from MDAF.MDAF import representfunc
-from MDAF.MDAF import installFalcoo
 from MDAF.MDAF import doe
-from MDAF.TestFunctions import *
 
 #target = __import__("MDAF.py")
 
