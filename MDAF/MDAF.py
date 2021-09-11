@@ -231,7 +231,7 @@ def representfunc(funcpath, forced = False):
 
 
 
-def doe(heuristicpath, testfunctionpaths, args, measurementSampleSize = 30):
+def doe(heuristicpath, testfunctionpaths, heuristic_args, measurementSampleSize = 30):
     for i,funpath in enumerate(testfunctionpaths):
         if funpath.find('@') == 0:
             testfunctionpaths[i] = path.dirname(__file__) + '/TestFunctions/' + funpath[1:]
@@ -251,9 +251,14 @@ def doe(heuristicpath, testfunctionpaths, args, measurementSampleSize = 30):
     # loading the test functions into the namespace and memory
     for idx, funcpath in enumerate(testfunctionpaths):
         funcname = funcnames[idx]
+        #getting the representation
+        repr = representfunc(funcpath, True)
+        heuristic_args['objs'] = repr['opti']
+        heuristic_args['lower'] = repr['lower']
+        heuristic_args['upper'] = repr['upper']
         # Creating the connection objects for communication between the heuristic and this module
         connections[funcname] = multiprocessing.Pipe(duplex=False)
-        proc.append(multiprocessing.Process(target=measure, name=funcname, args=(heuristicpath, funcpath, args, connections[funcname][1], measurementSampleSize)))
+        proc.append(multiprocessing.Process(target=measure, name=funcname, args=(heuristicpath, funcpath, heuristic_args, connections[funcname][1], measurementSampleSize)))
 
     # defining the response variables
     responses = {}
@@ -266,7 +271,7 @@ def doe(heuristicpath, testfunctionpaths, args, measurementSampleSize = 30):
     # Waiting for all the runs to be done
     for process in proc: process.join()
 
-    for process in proc:
+    for i,process in enumerate(proc):
         run = process.name
         if process.exitcode == 0: responses[run] = connections[run][0].recv()
         else:
@@ -274,6 +279,7 @@ def doe(heuristicpath, testfunctionpaths, args, measurementSampleSize = 30):
             failedfunctions[run] = process.exitcode
         connections[run][0].close()
         connections[run][1].close()
+        print('Test Function Completed: '+str(i)+'/'+str(len(proc)))
     
     
     # display output
@@ -369,7 +375,7 @@ if __name__== "__main__":
     #visualize2D('@Easom.py', -10,10)
     #feats = array([representfunc(testfun, True)['ela_meta'] for testfun in testfuns])
     #plotfuncs(['@Bukin2.py','@Bukin6.py'], 'ela_meta')
-    #perf = doe('@SimmulatedAnnealing.py', testfuns[3:4],{"t": 1000, "p": 0.95, "objs": 0},measurementSampleSize=30)
+    perf = doe('@SimmulatedAnnealing.py', testfuns[0:1],{"t": 1000, "p": 0.95, "objs": 0, "lower": [-10], "upper": [10]},measurementSampleSize=2)
 
     #perfs = array([[perf[func][0]['cpuTime'][0], perf[func][0]['numCalls'][0], perf[func][0]['quality'][0], perf[func][0]['convRate'][0]] for func in perf.keys()])
     #features = array(feats)

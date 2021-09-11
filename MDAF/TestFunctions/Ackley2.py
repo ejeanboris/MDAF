@@ -7,6 +7,7 @@ def main(args):
 	#_# upper: 32
 	#_# lower: -32
 	#_# minimum: [0, 0]
+	#_# opti: -200
 
     >>> main([0, 0])
     -200.0

@@ -10,6 +10,7 @@ def main(args):
 	#_# upper: 100
 	#_# lower: -100
 	#_# minimum: [3.1415, 3.1415]
+    #_# opti: -1
     '''
     return -1*math.cos(args[0])*math.cos(args[1])*math.exp(-(args[0]-math.pi)**2-(args[1]-math.pi)**2)
 
