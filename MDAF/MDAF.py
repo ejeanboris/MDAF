@@ -47,7 +47,7 @@ class counter:
         self.count += 1
         return self.func(*args, **kwargs)
 
-def simulate(algName, algPath, funcname, funcpath, args, initpoint):
+def simulate(algName, algPath, funcname, funcpath, heuris_args, initpoint):
     # loading the heuristic object into the namespace and memory
     spec = importlib.util.spec_from_file_location(algName, algPath)
     heuristic = importlib.util.module_from_spec(spec)
@@ -68,7 +68,7 @@ def simulate(algName, algPath, funcname, funcpath, args, initpoint):
         #This timer calculates directly the CPU time of the process (Nanoseconds)
         tic = time.process_time_ns()
         # running the test by calling the heuritic script with the test function as argument
-        quality = heuristic.main(testfunc, initpoint, args)
+        quality = heuristic.main(testfunc, initpoint, heuris_args)
         toc = time.process_time_ns()
         # ^^ The timer ends right above this; the CPU time is then calculated below by simple difference ^^
 
@@ -259,14 +259,15 @@ def doe(heuristicpath, testfunctionpaths, heuristic_args, measurementSampleSize 
         # Creating the connection objects for communication between the heuristic and this module
         connections[funcname] = multiprocessing.Pipe(duplex=False)
         proc.append(multiprocessing.Process(target=measure, name=funcname, args=(heuristicpath, funcpath, heuristic_args, connections[funcname][1], measurementSampleSize)))
+        proc[idx].start()
 
     # defining the response variables
     responses = {}
     failedfunctions = {}
 
     # Starting the subprocesses for each testfunction
-    for idx,process in enumerate(proc):
-        process.start()
+    #for idx,process in enumerate(proc):
+        #process.start()
 
     # Waiting for all the runs to be done
     for process in proc: process.join()
@@ -375,7 +376,7 @@ if __name__== "__main__":
     #visualize2D('@Easom.py', -10,10)
     #feats = array([representfunc(testfun, True)['ela_meta'] for testfun in testfuns])
     #plotfuncs(['@Bukin2.py','@Bukin6.py'], 'ela_meta')
-    perf = doe('@SimmulatedAnnealing.py', testfuns[4:5],{"t": 1000, "p": 0.95, "objs": 0, "lower": [-10], "upper": [10]},measurementSampleSize=2)
+    perf = doe('@SimmulatedAnnealing.py', testfuns[1:3],{"t": 1000, "p": 0.95, "objs": 0, "lower": [-10], "upper": [10]},measurementSampleSize=2)
 
     #perfs = array([[perf[func][0]['cpuTime'][0], perf[func][0]['numCalls'][0], perf[func][0]['quality'][0], perf[func][0]['convRate'][0]] for func in perf.keys()])
     #features = array(feats)
