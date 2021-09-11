@@ -46,7 +46,7 @@ def main(func, S, args):
     sigma = 0.1
     route.append(Best[:])
     while True:
-        print('\n\n\n')
+        #print('\n\n\n')
         R = tweak(cp.deepcopy(S),p,sigma,high, low)
         print(R)
         print(S)

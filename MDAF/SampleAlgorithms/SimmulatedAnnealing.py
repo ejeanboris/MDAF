@@ -39,14 +39,14 @@ def main(func, S, args):
     t = args["t"]
     p = args["p"]
     high =  args["upper"] if isinstance(args["upper"], int) else max(args["upper"])
-    low = args["lower"] if isinstance(args["lower"], int) else max(args["lower"])
+    low = args["lower"] if isinstance(args["lower"], int) else min(args["lower"])
     
     Best = list()
     Best[:] = cp.deepcopy(S)
     sigma = 0.1
     route.append(Best[:])
     for iterationstep in range(100000):
-        print('\n\n\n')
+        #print('\n\n\n')
         R = tweak(cp.deepcopy(S),p,sigma,high, low)
         #print(R)
         #print(S)

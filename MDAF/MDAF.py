@@ -279,7 +279,7 @@ def doe(heuristicpath, testfunctionpaths, heuristic_args, measurementSampleSize 
             failedfunctions[run] = process.exitcode
         connections[run][0].close()
         connections[run][1].close()
-        print('Test Function Completed: '+str(i)+'/'+str(len(proc)))
+        print('Test Function Completed: '+str(i+1)+'/'+str(len(proc)))
     
     
     # display output
