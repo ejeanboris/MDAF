@@ -10,6 +10,7 @@ from numpy import array, isnan, NaN, asarray, linspace, append, meshgrid, ndarra
 import statistics
 from functools import partial
 import shutil
+from math import inf
 
 # Surrogate modelling and plotting
 import matplotlib.pyplot as plt
@@ -364,9 +365,9 @@ def model(features, doe_data):
     
 
 if __name__== "__main__":
-    testfuns =  ['@Ackley2.py', '@Alpine.py', '@Brown.py', '@Bukin2.py', '@Bukin4.py', '@Bukin6.py', '@Easom.py', '@Keane.py', '@Leon.py', '@Matyas.py', '@McCormick.py', '@Miele_Cantrell.py', '@Periodic.py', '@PowellSingular2.py', '@Price1.py', '@Price2.py', '@Quartic.py', '@Rastriring.py', '@Scahffer.py', '@Schwefel.py', '@Sphere.py', '@Step.py', '@Step2.py', '@Styblinski-Tang.py', '@SumSquare.py', '@Wayburn.py', '@Zettle.py', '@Zirilli.py']
+    testfuns =  ['@Ackley2.py', '@Alpine.py', '@Brown.py', '@Bukin2.py', '@Bukin4.py', '@Bukin6.py', '@Keane.py', '@Leon.py', '@Matyas.py', '@McCormick.py', '@Miele_Cantrell.py', '@Periodic.py', '@PowellSingular2.py', '@Price1.py', '@Price2.py', '@Quartic.py', '@Rastriring.py', '@Scahffer.py', '@Schwefel.py', '@Sphere.py', '@Step.py', '@Step2.py', '@Styblinski-Tang.py', '@SumSquare.py', '@Wayburn.py', '@Zettle.py', '@Zirilli.py']
     #visualize2D('@Easom.py', -10,10)
-    #feats = array([representfunc(testfun)['ela_meta'] for testfun in testfuns[7:10]])
+    #feats = array([representfunc(testfun, True)['ela_meta'] for testfun in testfuns])
     #plotfuncs(['@Bukin2.py','@Bukin6.py'], 'ela_meta')
     #perf = doe('@SimmulatedAnnealing.py', testfuns[3:4],{"t": 1000, "p": 0.95, "objs": 0},measurementSampleSize=30)
 
