@@ -38,8 +38,8 @@ def main(func, S, args):
     y = args["objs"]
     t = args["t"]
     p = args["p"]
-    high = max([args["upper"]])
-    low = max([args["lower"]])
+    high =  args["upper"] if isinstance(args["upper"], int) else max(args["upper"])
+    low = args["lower"] if isinstance(args["lower"], int) else max(args["lower"])
     
     Best = list()
     Best[:] = cp.deepcopy(S)

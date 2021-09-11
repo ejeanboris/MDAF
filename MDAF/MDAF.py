@@ -375,7 +375,7 @@ if __name__== "__main__":
     #visualize2D('@Easom.py', -10,10)
     #feats = array([representfunc(testfun, True)['ela_meta'] for testfun in testfuns])
     #plotfuncs(['@Bukin2.py','@Bukin6.py'], 'ela_meta')
-    perf = doe('@SimmulatedAnnealing.py', testfuns[0:1],{"t": 1000, "p": 0.95, "objs": 0, "lower": [-10], "upper": [10]},measurementSampleSize=2)
+    perf = doe('@SimmulatedAnnealing.py', testfuns[4:5],{"t": 1000, "p": 0.95, "objs": 0, "lower": [-10], "upper": [10]},measurementSampleSize=2)
 
     #perfs = array([[perf[func][0]['cpuTime'][0], perf[func][0]['numCalls'][0], perf[func][0]['quality'][0], perf[func][0]['convRate'][0]] for func in perf.keys()])
     #features = array(feats)
