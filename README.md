@@ -1,8 +1,6 @@
 
 
-Based on the provided code snippets, I'll create a basic README file for the repository. Please note that this is a generated file and might not cover all aspects of the repository.
-
-**MDAF Repository**
+**MDAF**
 ======================
 
 **Overview**
@@ -70,12 +68,6 @@ The repository includes several Jupyter notebooks that demonstrate the usage of 
 
 The repository includes a collection of unit tests and integration tests to ensure the correctness of the MDAF package.
 
-**License**
--------
-
-The MDAF package is released under the CC0 license.
-
-Please note that this is a basic README file, and you may want to add more information, such as usage examples, API documentation, and contributing guidelines, to make it more comprehensive.
 
 ## Misc
 - reinstall the package for testing: 
